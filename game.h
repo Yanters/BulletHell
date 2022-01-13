@@ -13,6 +13,9 @@ extern "C" {
 #define SCREEN_WIDTH	640
 #define SCREEN_HEIGHT	480
 
+#define LEVEL_WIDTH    1280 
+#define LEVEL_HEIGHT   1078
+
 void DrawPixel(SDL_Surface* surface, int x, int y, Uint32 color);
 
 

@@ -41,7 +41,7 @@ game::game() {
 	charset = LoadImage("./cs8x8.bmp");
 	SDL_SetColorKey(charset, true, 0x000000);
 
-	eti = LoadImage("./eti.bmp");
+	eti = LoadImage("./hero.bmp");
 
 
 
@@ -164,7 +164,6 @@ void game::CheckInput() {
 			quit = 1;
 			break;
 		};
-		player.movePlayer();
 	};
 }
 
@@ -178,9 +177,12 @@ void game::UpdateTime() {
 	worldTime = 0;
 	distance = 0;
 	etiSpeed = 1;
+	SDL_Surface* background = LoadImage("./background.bmp");
 
+	//SDL_Surface* background = SDL_LoadBMP("./background.bmp");
 	while (!quit) {
 		t2 = SDL_GetTicks();
+		
 
 		// w tym momencie t2-t1 to czas w milisekundach,
 		// jaki uplyna³ od ostatniego narysowania ekranu
@@ -196,12 +198,14 @@ void game::UpdateTime() {
 		distance += etiSpeed * delta;
 
 		SDL_FillRect(screen, NULL, czarny);
+		DrawSurface(background, LEVEL_WIDTH / 2 + player.offsetX, LEVEL_HEIGHT / 2 + player.offsetY);
+		//DrawSurface(background, SCREEN_WIDTH / 2 , SCREEN_HEIGHT / 2 );
 
-//		DrawSurface(eti,
-	//		SCREEN_WIDTH / 2 + sin(distance) * SCREEN_HEIGHT / 3,
-		//	SCREEN_HEIGHT / 2 + cos(distance) * SCREEN_HEIGHT / 3);
-
-		DrawSurface(eti,player.positionX, player.positionY);
+		player.movePlayer(delta);
+		
+		DrawSurface(eti, player.positionX + player.offsetX, player.positionY + player.offsetY);
+		//DrawSurface(eti, player.positionX, player.positionY);
+		//DrawSurface(eti,player.positionX, player.positionY);
 
 		fpsTimer += delta;
 		if (fpsTimer > 0.5) {
