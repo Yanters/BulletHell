@@ -12,8 +12,15 @@ extern "C"
 #endif
 int main(int argc, char **argv) {
 
-	game MainGame;
-	MainGame.UpdateTime();
+
+	while (1) {
+		Game MainGame;
+		MainGame.pickLevel();
+		MainGame.setLevel();
+		if (MainGame.UpdateTime()) {
+			break;
+		}
+	}
 	// okno konsoli nie jest widoczne, je¿eli chcemy zobaczyæ
 	// komunikaty wypisywane printf-em trzeba w opcjach:
 	// project -> szablon2 properties -> Linker -> System -> Subsystem

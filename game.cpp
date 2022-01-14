@@ -1,6 +1,6 @@
 #include "game.h"
 
-game::game() {
+Game::Game() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		printf("SDL_Init error: %s\n", SDL_GetError());
 	}
@@ -38,10 +38,11 @@ game::game() {
 	czerwony = SDL_MapRGB(screen->format, 0xFF, 0x00, 0x00);
 	niebieski = SDL_MapRGB(screen->format, 0x11, 0x11, 0xCC);
 
+	menu = LoadImage("./images/menu.bmp");
+	background = LoadImage("./images/background.bmp");
 	charset = LoadImage("./cs8x8.bmp");
 	SDL_SetColorKey(charset, true, 0x000000);
 
-	eti = LoadImage("./hero.bmp");
 
 
 
@@ -59,7 +60,7 @@ game::game() {
 // draw a text txt on surface screen, starting from the point (x, y)
 // charset is a 128x128 bitmap containing character images
 
-void game::DrawString( int x, int y, const char* text) {
+void Game::DrawString( int x, int y, const char* text) {
 	int px, py, c;
 	SDL_Rect s, d;
 	s.w = 8;
@@ -84,7 +85,7 @@ void game::DrawString( int x, int y, const char* text) {
 // (x, y) to punkt úrodka obrazka sprite na ekranie
 // draw a surface sprite on a surface screen in point (x, y)
 // (x, y) is the center of sprite on screen
-void game::DrawSurface(SDL_Surface* sprite, int x, int y) {
+void Game::DrawSurface(SDL_Surface* sprite, int x, int y) {
 	SDL_Rect dest;
 	dest.x = x - sprite->w / 2;
 	dest.y = y - sprite->h / 2;
@@ -107,7 +108,7 @@ void DrawPixel(SDL_Surface* surface, int x, int y, Uint32 color) {
 // rysowanie linii o d≥ugoúci l w pionie (gdy dx = 0, dy = 1) 
 // bπdü poziomie (gdy dx = 1, dy = 0)
 // draw a vertical (when dx = 0, dy = 1) or horizontal (when dx = 1, dy = 0) line
-void game::DrawLine(int x, int y, int l, int dx, int dy, Uint32 color) {
+void Game::DrawLine(int x, int y, int l, int dx, int dy, Uint32 color) {
 	for (int i = 0; i < l; i++) {
 		DrawPixel(screen, x, y, color);
 		x += dx;
@@ -119,7 +120,7 @@ void game::DrawLine(int x, int y, int l, int dx, int dy, Uint32 color) {
 
 // rysowanie prostokπta o d≥ugoúci bokÛw l i k
 // draw a rectangle of size l by k
-void game::DrawRectangle( int x, int y, int l, int k, Uint32 outlineColor, Uint32 fillColor) {
+void Game::DrawRectangle( int x, int y, int l, int k, Uint32 outlineColor, Uint32 fillColor) {
 	int i;
 	DrawLine( x, y, k, 0, 1, outlineColor);
 	DrawLine( x + l - 1, y, k, 0, 1, outlineColor);
@@ -129,30 +130,29 @@ void game::DrawRectangle( int x, int y, int l, int k, Uint32 outlineColor, Uint3
 		DrawLine( x + 1, i, l - 2, 1, 0, fillColor);
 };
 
-SDL_Surface* game::LoadImage(char imageName[]) {
-	// wczytanie obrazka cs8x8.bmp
-	SDL_Surface* image;
-	image = SDL_LoadBMP(imageName);
-	if (image == NULL) {
-		printf("SDL_LoadBMP(%s) error: %s\n", imageName, SDL_GetError());
-		SDL_FreeSurface(screen);
-		SDL_DestroyTexture(scrtex);
-		SDL_DestroyWindow(window);
-		SDL_DestroyRenderer(renderer);
-		SDL_Quit();
-	};
-	return image;
-}
 
-void game::CheckInput() {
+
+void Game::CheckInput() {
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYDOWN:
 			if (event.key.keysym.sym == SDLK_ESCAPE) quit = 1;
+			if (event.key.keysym.sym == SDLK_n) quit = 2;
 			if (event.key.keysym.sym == SDLK_UP) player.VelY = -1;
 			if (event.key.keysym.sym == SDLK_DOWN) player.VelY = 1;
-			if (event.key.keysym.sym == SDLK_LEFT) player.VelX = -1;
-			if (event.key.keysym.sym == SDLK_RIGHT) player.VelX = 1;
+			if (event.key.keysym.sym == SDLK_LEFT) {
+				player.VelX = -1;
+				player.direction = 1;
+			} 
+			if (event.key.keysym.sym == SDLK_RIGHT) {
+				player.VelX = 1;
+				player.direction = 0;
+			}
+			if (event.key.keysym.sym == SDLK_w) player.shootBullet(0,-1);
+			if (event.key.keysym.sym == SDLK_s) player.shootBullet(0, 1);
+			if (event.key.keysym.sym == SDLK_a) player.shootBullet(-1, 0);
+			if (event.key.keysym.sym == SDLK_d) player.shootBullet(1, 0);
+
 			break;
 		case SDL_KEYUP:
 			if (event.key.keysym.sym == SDLK_UP && player.VelY < 0) player.VelY = 0;
@@ -167,8 +167,28 @@ void game::CheckInput() {
 	};
 }
 
+void Game::displayInterface() {
+	// tekst informacyjny / info text
+	DrawRectangle(SCREEN_WIDTH - 120 , 0, 120, 35, czerwony, czarny);
+	//            "template for the second project, elapsed time = %.1lf s  %.0lf frames / s"
+	sprintf(text, "Time: %.1lfs", worldTime);
+	DrawString(SCREEN_WIDTH-10 -2* strlen(text) * 8 / 2, 5, text);
 
-void game::UpdateTime() {
+	//When player can Shoot TETETE
+	sprintf(text, "Cooldown: %.1lfs", boss.lastShoot);
+	DrawString(SCREEN_WIDTH - 10 - 2 * strlen(text) * 8 / 2, 30, text);
+
+	sprintf(text, "  %.0lf FPS", fps);
+	DrawString(SCREEN_WIDTH-10 - 2 * strlen(text) * 8 / 2, 20, text);
+	//	      "Esc - exit, \030 - faster, \031 - slower"
+
+	DrawRectangle(5, SCREEN_HEIGHT - 25, 250, 20, czerwony, czarny);
+
+	sprintf(text, "Esc - quit, \030 \031 \032 \033 - movement");
+	DrawString(10, SCREEN_HEIGHT-20, text);
+}
+
+bool Game::UpdateTime() {
 
 	frames = 0;
 	fpsTimer = 0;
@@ -177,7 +197,7 @@ void game::UpdateTime() {
 	worldTime = 0;
 	distance = 0;
 	etiSpeed = 1;
-	SDL_Surface* background = LoadImage("./background.bmp");
+	
 
 	//SDL_Surface* background = SDL_LoadBMP("./background.bmp");
 	while (!quit) {
@@ -192,7 +212,8 @@ void game::UpdateTime() {
 		// delta is the same time in seconds
 		delta = (t2 - t1) * 0.001;
 		t1 = t2;
-
+		player.lastShoot += delta;
+		boss.lastShoot += delta;
 		worldTime += delta;
 
 		distance += etiSpeed * delta;
@@ -203,7 +224,23 @@ void game::UpdateTime() {
 
 		player.movePlayer(delta);
 		
-		DrawSurface(eti, player.positionX + player.offsetX, player.positionY + player.offsetY);
+		for (int o = 0; o < 100; o++) {
+			player.bullets[o].calcBullet();
+			if (player.bullets[o].alive) {
+				DrawSurface(player.bulletSprite, player.bullets[o].positionX + player.offsetX, player.bullets[o].positionY + player.offsetY);
+			}
+		}
+
+		for (int o = 0; o <200; o++) {
+			boss.bullets[o].calcBullet();
+			if (boss.bullets[o].alive) {
+				DrawSurface(boss.bulletSprite, boss.bullets[o].positionX + player.offsetX, boss.bullets[o].positionY + player.offsetY);
+			}
+		}
+
+		DrawSurface(player.sprite, player.positionX + player.offsetX, player.positionY + player.offsetY);
+		DrawSurface(boss.sprite, boss.positionX + player.offsetX,boss.positionY + player.offsetY);
+		boss.startAttack(worldTime);
 		//DrawSurface(eti, player.positionX, player.positionY);
 		//DrawSurface(eti,player.positionX, player.positionY);
 
@@ -214,14 +251,7 @@ void game::UpdateTime() {
 			fpsTimer -= 0.5;
 		};
 
-		// tekst informacyjny / info text
-		DrawRectangle( 4, 4, SCREEN_WIDTH - 8, 36, czerwony, niebieski);
-		//            "template for the second project, elapsed time = %.1lf s  %.0lf frames / s"
-		sprintf(text, "Szablon drugiego zadania, czas trwania = %.1lf s  %.0lf klatek / s", worldTime, fps);
-		DrawString( screen->w / 2 - strlen(text) * 8 / 2, 10, text);
-		//	      "Esc - exit, \030 - faster, \031 - slower"
-		sprintf(text, "Esc - wyjscie, \030 - przyspieszenie, \031 - zwolnienie");
-		DrawString( screen->w / 2 - strlen(text) * 8 / 2, 26, text);
+		displayInterface();
 
 		SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
 		//		SDL_RenderClear(renderer);
@@ -236,13 +266,111 @@ void game::UpdateTime() {
 		frames++;
 	};
 	QuitGame();
+
+	if (quit == 1) {
+		return true;
+	}
+	else if(quit==2) {
+		return false;
+	}
 }
 
-void game::QuitGame() {
+void Game::displayMenu() {
+	SDL_FillRect(screen, NULL, czarny);
+	DrawSurface(menu, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
+	//		SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, scrtex, NULL, NULL);
+	SDL_RenderPresent(renderer);
+}
+
+void Game::pickLevel() {
+	displayMenu();
+
+	bool closeWhile = false;
+	while (!closeWhile) {
+		while (SDL_WaitEvent(&event)) {
+			if (closeWhile) {
+				break;
+			}
+			if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_1:
+					pickedLevel = 1;
+					closeWhile = true;
+					break;
+				case SDLK_2:
+					pickedLevel = 2;
+					closeWhile = true;
+					break;
+				case SDLK_3:
+					pickedLevel = 3;
+					closeWhile = true;
+					break;
+				case SDLK_ESCAPE:
+					QuitGame();
+					exit(0);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Game::setLevel() {
+	boss.type = pickedLevel;
+	switch (pickedLevel)
+	{
+	case 1:
+		boss.bulletSpeed = 0.7;
+		boss.positionX = LEVEL_WIDTH / 2 + 150;
+		boss.positionY = LEVEL_HEIGHT / 2;
+		boss.sprite = LoadImage("./images/boss1.bmp");
+		background = LoadImage("./images/background.bmp");
+		player.positionX = SCREEN_WIDTH / 2 - 200;
+		player.positionY = LEVEL_HEIGHT / 2;
+		break;
+	case 2:
+		boss.bulletSpeed = 0.8;
+		boss.shootCooldown = 0.2;
+		boss.positionX = LEVEL_WIDTH / 2 + 20;
+		boss.positionY = LEVEL_HEIGHT / 2 + 150;
+		boss.sprite = LoadImage("./images/boss2.bmp");
+		background = LoadImage("./images/background2.bmp");
+		player.positionX = SCREEN_WIDTH / 2 - 200;
+		player.positionY = LEVEL_HEIGHT / 2 + 150;
+		break;
+	case 3:
+		boss.bulletSpeed = 0.6;
+		boss.shootCooldown = 0.1;
+		boss.positionX = LEVEL_WIDTH / 2 + 20;
+		boss.positionY = LEVEL_HEIGHT / 2 ;
+		boss.sprite = LoadImage("./images/boss3.bmp");
+		background = LoadImage("./images/background3.bmp");
+		player.positionX = SCREEN_WIDTH / 2 - 100;
+		player.positionY = LEVEL_HEIGHT / 2 + 400;
+		break;
+	}
+}
+
+void Game::QuitGame() {
 
 	// zwolnienie powierzchni / freeing all surfaces
 	SDL_FreeSurface(charset);
 	SDL_FreeSurface(screen);
+	SDL_FreeSurface(background);
+	SDL_FreeSurface(menu);
+	//player
+	SDL_FreeSurface(player.heroL);
+	SDL_FreeSurface(player.heroR);
+	SDL_FreeSurface(player.bulletSprite);
+	//boss
+	SDL_FreeSurface(boss.sprite);
+	SDL_FreeSurface(boss.bulletSprite);
+
+
 	SDL_DestroyTexture(scrtex);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

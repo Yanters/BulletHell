@@ -1,2 +1,3 @@
-﻿  player.cpp
+﻿  boss.cpp
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\boss.cpp(12,12): warning C4244: "argument": konwersja z "time_t" do "unsigned int", możliwa utrata danych
   szablon2vs19.vcxproj -> D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\x64\Debug\szablon2vs19.exe
