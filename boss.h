@@ -18,11 +18,16 @@ public:
 
 	double positionX = LEVEL_WIDTH/2, positionY= LEVEL_HEIGHT / 2;
 	int type = 1;
+	int bWidth;
+	int bHeight;
+	int health = 100;
 
 	Bullet bullets[200];
 	int bulletsShoot = 0;
 
 	double bulletSpeed = 0.7;
+	bool canMove = false;
+	double bossSpeed = 1;
 
 	double shootCooldown = 0.5;
 	double lastShoot = shootCooldown;
@@ -35,5 +40,5 @@ public:
 	void diagnalPattern();
 	void spiralPattern(double timeDiff);
 	void multipleSpiralPattern(double timeDiff);
-
+	void moveBoss(double timeDelta, double distance);
 };

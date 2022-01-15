@@ -16,8 +16,8 @@ public:
 	player();
 
 	SDL_Surface* sprite;
-	SDL_Surface* heroR;
-	SDL_Surface* heroL;
+	SDL_Surface* heroR, * heroRS;
+	SDL_Surface* heroL, * heroLS;
 
 
 	SDL_Surface* bulletSprite;
@@ -28,7 +28,10 @@ public:
 	void movePlayer(double delta);
 	int direction = 0;
 	void switchPlayer();
+	int health = 5;
 
+	int pWidth = PLAYER_WIDTH;
+	int pHeight = PLAYER_HEIGHT;
 	Bullet bullets[100];
 	int bulletsShoot = 0;
 
@@ -37,6 +40,15 @@ public:
 	double shootCooldown = 0.5;
 	double lastShoot= shootCooldown;
 
+	double barrierCooldown = 5;
+	double lastBarrier = barrierCooldown;
+	double safeCooldown = 1;
+	double lastTimeSafe = 0;
+	bool isSafe = false;
+
 	void calculateOffset();
 	void shootBullet(double velX, double velY);
+
+	void hitPlayer();
+	void keepSafe(double delta);
 };

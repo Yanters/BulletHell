@@ -1,3 +1,23 @@
-﻿  boss.cpp
-D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\boss.cpp(12,12): warning C4244: "argument": konwersja z "time_t" do "unsigned int", możliwa utrata danych
+﻿  game.cpp
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(175,62): warning C4267: "argument": konwersja z "size_t" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(186,65): warning C4267: "argument": konwersja z "size_t" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(174,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(179,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(181,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(185,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(191,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(226,78): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(226,43): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(234,112): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(234,66): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(246,106): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(246,62): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(257,82): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(257,47): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(262,77): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(262,44): warning C4244: "argument": konwersja z "double" do "int", możliwa utrata danych
+  main.cpp
+  player.cpp
+  Generowanie kodu...
+D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\game.cpp(297): warning C4715: "Game::UpdateTime”: niewszystkie ścieżki kodu zwracają wartość
   szablon2vs19.vcxproj -> D:\NAUKA_WEB\Studia\PP\Projekty\BulletHell\x64\Debug\szablon2vs19.exe

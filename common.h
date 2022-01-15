@@ -26,5 +26,6 @@ public:
 	double positionX, positionY;
 	bool alive = true;
 	void calcBullet();
+	bool checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight);
 };
 

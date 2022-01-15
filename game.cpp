@@ -175,8 +175,12 @@ void Game::displayInterface() {
 	DrawString(SCREEN_WIDTH-10 -2* strlen(text) * 8 / 2, 5, text);
 
 	//When player can Shoot TETETE
-	sprintf(text, "Cooldown: %.1lfs", boss.lastShoot);
-	DrawString(SCREEN_WIDTH - 10 - 2 * strlen(text) * 8 / 2, 30, text);
+	DrawRectangle(0, 0, 120, 35, czerwony, czarny);
+	sprintf(text, "Boss HP: %d", boss.health);
+	DrawString(5, 5, text);
+	sprintf(text, "Player HP: %d", player.health);
+	DrawString(5, 15, text);
+
 
 	sprintf(text, "  %.0lf FPS", fps);
 	DrawString(SCREEN_WIDTH-10 - 2 * strlen(text) * 8 / 2, 20, text);
@@ -216,7 +220,7 @@ bool Game::UpdateTime() {
 		boss.lastShoot += delta;
 		worldTime += delta;
 
-		distance += etiSpeed * delta;
+		distance += boss.bossSpeed * delta;
 
 		SDL_FillRect(screen, NULL, czarny);
 		DrawSurface(background, LEVEL_WIDTH / 2 + player.offsetX, LEVEL_HEIGHT / 2 + player.offsetY);
@@ -228,6 +232,11 @@ bool Game::UpdateTime() {
 			player.bullets[o].calcBullet();
 			if (player.bullets[o].alive) {
 				DrawSurface(player.bulletSprite, player.bullets[o].positionX + player.offsetX, player.bullets[o].positionY + player.offsetY);
+				if (player.bullets[o].checkCollision(boss.positionX, boss.positionY, boss.bWidth, boss.bHeight))
+				{
+					boss.health--;
+					player.bullets[o].alive = false;
+				}
 			}
 		}
 
@@ -235,11 +244,23 @@ bool Game::UpdateTime() {
 			boss.bullets[o].calcBullet();
 			if (boss.bullets[o].alive) {
 				DrawSurface(boss.bulletSprite, boss.bullets[o].positionX + player.offsetX, boss.bullets[o].positionY + player.offsetY);
+				if (boss.bullets[o].checkCollision(player.positionX, player.positionY, player.pWidth, player.pHeight))
+				{
+					player.hitPlayer();
+					
+					boss.bullets[o].alive = false;
+				}
 			}
 		}
+		player.keepSafe(delta);
 
 		DrawSurface(player.sprite, player.positionX + player.offsetX, player.positionY + player.offsetY);
-		DrawSurface(boss.sprite, boss.positionX + player.offsetX,boss.positionY + player.offsetY);
+		if (boss.canMove) {
+			boss.moveBoss(delta, distance);
+		}
+		
+			DrawSurface(boss.sprite, boss.positionX + player.offsetX, boss.positionY + player.offsetY);
+		
 		boss.startAttack(worldTime);
 		//DrawSurface(eti, player.positionX, player.positionY);
 		//DrawSurface(eti,player.positionX, player.positionY);
@@ -328,6 +349,8 @@ void Game::setLevel() {
 		boss.positionX = LEVEL_WIDTH / 2 + 150;
 		boss.positionY = LEVEL_HEIGHT / 2;
 		boss.sprite = LoadImage("./images/boss1.bmp");
+		boss.bWidth = 200;
+		boss.bHeight = 173;
 		background = LoadImage("./images/background.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 200;
 		player.positionY = LEVEL_HEIGHT / 2;
@@ -338,6 +361,8 @@ void Game::setLevel() {
 		boss.positionX = LEVEL_WIDTH / 2 + 20;
 		boss.positionY = LEVEL_HEIGHT / 2 + 150;
 		boss.sprite = LoadImage("./images/boss2.bmp");
+		boss.bWidth = 112;
+		boss.bHeight = 152;
 		background = LoadImage("./images/background2.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 200;
 		player.positionY = LEVEL_HEIGHT / 2 + 150;
@@ -348,6 +373,9 @@ void Game::setLevel() {
 		boss.positionX = LEVEL_WIDTH / 2 + 20;
 		boss.positionY = LEVEL_HEIGHT / 2 ;
 		boss.sprite = LoadImage("./images/boss3.bmp");
+		boss.bWidth = 176;
+		boss.bHeight = 123;
+		boss.canMove = true;
 		background = LoadImage("./images/background3.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 100;
 		player.positionY = LEVEL_HEIGHT / 2 + 400;
@@ -365,6 +393,8 @@ void Game::QuitGame() {
 	//player
 	SDL_FreeSurface(player.heroL);
 	SDL_FreeSurface(player.heroR);
+	SDL_FreeSurface(player.heroLS);
+	SDL_FreeSurface(player.heroRS);
 	SDL_FreeSurface(player.bulletSprite);
 	//boss
 	SDL_FreeSurface(boss.sprite);

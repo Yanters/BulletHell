@@ -35,7 +35,7 @@ void Boss::startAttack(double timeDiff) {
 			}
 			break;
 		case 3:
-			if (int(timeDiff)%5==0)
+			if (int(timeDiff)%5==0 && randomNumber%2==0)
 			{
 				multipleSpiralPattern(-timeDiff);
 
@@ -114,4 +114,11 @@ void Boss::multipleSpiralPattern(double timeDiff) {
 		shootBullet(sin(M_PI * timeDiff), cos(M_PI * timeDiff));
 		shootBullet(sin(M_PI * timeDiff +M_PI), cos(M_PI * timeDiff + M_PI));
 
+}
+
+void Boss::moveBoss(double timeDelta, double distance) {
+	if (canMove) {
+		positionX += double((sin(distance) * bossSpeed) * timeDelta)*100;
+		positionY += double((cos(distance) * bossSpeed) * timeDelta)*100;
+	}
 }

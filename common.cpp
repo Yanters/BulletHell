@@ -25,3 +25,14 @@ void Bullet::calcBullet() {
 		alive = false;
 	}
 }
+
+
+bool Bullet::checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight) {
+	if (positionX >= ObjectPositionX - (ObjectWidth / 2) && positionX <= ObjectPositionX + (ObjectWidth / 2) && positionY>= ObjectPositionY - (ObjectHeight/2) && positionY <= ObjectPositionY + (ObjectHeight / 2)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
+}

@@ -8,16 +8,28 @@ player::player() {
 	direction = 0;
 	heroR = LoadImage("./images/hero.bmp");
 	heroL = LoadImage("./images/hero2.bmp");
+	heroRS = LoadImage("./images/heroSafe.bmp");
+	heroLS = LoadImage("./images/hero2Safe.bmp");
 	sprite = heroR;
 	bulletSprite = LoadImage("./images/bullet2.bmp");
 }
 
 void player::switchPlayer() {
 	if (direction == 0) {
-		sprite = heroR;
+		if (isSafe) {
+			sprite = heroRS;
+		}
+		else {
+			sprite = heroR;
+		}
 	}
 	else if (direction == 1) {
-		sprite = heroL;
+		if (isSafe) {
+			sprite = heroLS;
+		}
+		else {
+			sprite = heroL;
+		}
 	}
 }
 
@@ -83,4 +95,29 @@ void player::shootBullet(double velX, double velY) {
 		bulletsShoot++;
 	}
 
+}
+void player::hitPlayer() {
+	if (!isSafe) {
+		health--;
+		if (lastBarrier >= barrierCooldown) {
+			isSafe = true;
+			lastBarrier = 0;
+		}
+	}
+}
+
+
+void player::keepSafe(double delta) {
+	if (isSafe)
+	{
+		lastTimeSafe += delta;
+	}
+	else {
+		lastBarrier += delta;
+	}
+
+	if (lastTimeSafe >= safeCooldown && isSafe) {
+		isSafe = false;
+		lastTimeSafe = 0;
+	}
 }
