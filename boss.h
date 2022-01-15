@@ -20,7 +20,8 @@ public:
 	int type = 1;
 	int bWidth;
 	int bHeight;
-	int health = 100;
+	int maxHealth = 50;
+	int health = maxHealth;
 
 	Bullet bullets[200];
 	int bulletsShoot = 0;

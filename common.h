@@ -24,7 +24,7 @@ public:
 	double velY = 1;
 	double speed = 10;
 	double positionX, positionY;
-	bool alive = true;
+	bool alive = false;
 	void calcBullet();
 	bool checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight);
 };

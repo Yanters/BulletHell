@@ -20,7 +20,7 @@ public:
 	int t1, t2, quit, frames, rc;
 	double delta, worldTime, fpsTimer, fps, distance, etiSpeed;
 	SDL_Event event;
-	SDL_Surface* screen, * charset, * background ,* menu;
+	SDL_Surface* screen, * charset, * background ,* menu, * victory, * defeat;
 	SDL_Texture* scrtex;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
@@ -36,7 +36,6 @@ public:
 	//functions
 	Game();
 	void pickLevel();
-	int pickedLevel = 1;
 	void setLevel();
 	void displayMenu();
 
@@ -48,4 +47,10 @@ public:
 	void QuitGame();
 	void CheckInput();
 	void displayInterface();
+	void displayHP(double pX, double pY, int pHealth, int pMaxHealth, double bX, double bY, int bHealth, int bMaxHealth, int bWidth, int bHeight, double offsetX, double offsetY);
+
+	int actualLevel = 1;
+	void displayDefeat();
+	void displayVictory();
+	void checkGameStatus();
 };

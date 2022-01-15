@@ -28,7 +28,8 @@ public:
 	void movePlayer(double delta);
 	int direction = 0;
 	void switchPlayer();
-	int health = 5;
+	int maxHelath = 10;
+	int health = maxHelath;
 
 	int pWidth = PLAYER_WIDTH;
 	int pHeight = PLAYER_HEIGHT;
@@ -40,9 +41,9 @@ public:
 	double shootCooldown = 0.5;
 	double lastShoot= shootCooldown;
 
-	double barrierCooldown = 5;
+	double barrierCooldown = 3;
 	double lastBarrier = barrierCooldown;
-	double safeCooldown = 1;
+	double safeCooldown = 3;
 	double lastTimeSafe = 0;
 	bool isSafe = false;
 

@@ -40,6 +40,8 @@ Game::Game() {
 
 	menu = LoadImage("./images/menu.bmp");
 	background = LoadImage("./images/background.bmp");
+	victory = LoadImage("./images/victory.bmp");
+	defeat = LoadImage("./images/defeat.bmp");
 	charset = LoadImage("./cs8x8.bmp");
 	SDL_SetColorKey(charset, true, 0x000000);
 
@@ -227,7 +229,7 @@ bool Game::UpdateTime() {
 		//DrawSurface(background, SCREEN_WIDTH / 2 , SCREEN_HEIGHT / 2 );
 
 		player.movePlayer(delta);
-		
+		displayHP(player.positionX, player.positionY, player.health,player.maxHelath, boss.positionX, boss.positionY, boss.health,boss.maxHealth,boss.BOSS_WIDTH,boss.BOSS_HEIGHT, player.offsetX, player.offsetY);
 		for (int o = 0; o < 100; o++) {
 			player.bullets[o].calcBullet();
 			if (player.bullets[o].alive) {
@@ -281,15 +283,27 @@ bool Game::UpdateTime() {
 
 
 		// obs³uga zdarzeñ (o ile jakieœ zasz³y) / handling of events (if there were any)
-		
+		checkGameStatus();
 		CheckInput();
-
 		frames++;
 	};
-	QuitGame();
+	//esc - 1
+	// n - 2
+	if (player.health <= 0) {
+		displayDefeat();
+		QuitGame();
+		return false;
+	}
+	if (boss.health <= 0) {
+		displayVictory();
+		QuitGame();
+		return false;
+	}
 
+	QuitGame();
 	if (quit == 1) {
-		return true;
+		actualLevel = 0;
+		return false;
 	}
 	else if(quit==2) {
 		return false;
@@ -305,8 +319,47 @@ void Game::displayMenu() {
 	SDL_RenderPresent(renderer);
 }
 
-void Game::pickLevel() {
-	displayMenu();
+void Game::displayHP(double pX, double pY, int pHealth,int pMaxHealth, double bX, double bY, int bHealth, int bMaxHealth,int bWidth,int bHeight,double offsetX, double offsetY) {
+	double pMinus = 0, bMinus = 0;
+	if (pHealth == pMaxHealth) { pMinus = 1; }
+	else {
+		pMinus = double(double( pHealth)/ double( pMaxHealth) );
+	}
+	if (bHealth == bMaxHealth) { bMinus = 1; }
+	else {
+		bMinus = double(double(bHealth) / double(bMaxHealth));
+	}
+
+	if (pMinus < 0) {
+		pMinus = 0;
+	}
+	if (bMinus < 0) {
+		bMinus = 0;
+	}
+
+	if (!(pX - (PLAYER_WIDTH)+offsetX<0 || pX - (PLAYER_WIDTH)+offsetX + 1 > SCREEN_WIDTH || pY - PLAYER_WIDTH + offsetY < 0)) {
+		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX, pY - PLAYER_WIDTH + offsetY, 2 * PLAYER_WIDTH, 15, czarny, czarny);
+		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX + 1, pY - PLAYER_WIDTH + offsetY + 1, (2 * PLAYER_WIDTH - 2) * pMinus, 13, czarny, czerwony);
+	}
+	
+	double shorterConditionX = bX - (bWidth / 2) + offsetX + 1 + bWidth;
+	double shorterConditionY = bY - bWidth / 2 + offsetY+15;
+	if(!((bX - (bWidth / 2) + offsetX) < 0 || (bX - (bWidth / 2) + offsetX) > SCREEN_WIDTH || shorterConditionX <0 || shorterConditionX > SCREEN_WIDTH ||shorterConditionY<0|| shorterConditionY>SCREEN_HEIGHT)) {
+		DrawRectangle(bX - (bWidth/2)+offsetX, bY - bWidth/2 + offsetY,  bWidth, 15, czarny, czarny);
+		DrawRectangle(bX - (bWidth/2)+offsetX + 1, bY - bWidth/2 + offsetY + 1, ( bWidth - 2) * bMinus, 13, czarny, czerwony);
+	}
+	
+}
+
+void Game::displayVictory() {
+	DrawSurface(victory, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 );
+
+
+
+	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
+	//		SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, scrtex, NULL, NULL);
+	SDL_RenderPresent(renderer);
 
 	bool closeWhile = false;
 	while (!closeWhile) {
@@ -318,21 +371,13 @@ void Game::pickLevel() {
 			{
 				switch (event.key.keysym.sym)
 				{
-				case SDLK_1:
-					pickedLevel = 1;
-					closeWhile = true;
-					break;
-				case SDLK_2:
-					pickedLevel = 2;
-					closeWhile = true;
-					break;
-				case SDLK_3:
-					pickedLevel = 3;
+				case SDLK_RETURN:
+					actualLevel = (actualLevel+1)%4;
 					closeWhile = true;
 					break;
 				case SDLK_ESCAPE:
-					QuitGame();
-					exit(0);
+					actualLevel = 0;
+					closeWhile = true;
 					break;
 				}
 			}
@@ -340,9 +385,85 @@ void Game::pickLevel() {
 	}
 }
 
+
+void Game::displayDefeat() {
+	DrawSurface(defeat, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
+
+
+	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
+	//		SDL_RenderClear(renderer);
+	SDL_RenderCopy(renderer, scrtex, NULL, NULL);
+	SDL_RenderPresent(renderer);
+
+	bool closeWhile = false;
+	while (!closeWhile) {
+		while (SDL_WaitEvent(&event)) {
+			if (closeWhile) {
+				break;
+			}
+			if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_RETURN:
+					closeWhile = true;
+					break;
+				case SDLK_ESCAPE:
+					actualLevel = 0;
+					closeWhile = true;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Game::checkGameStatus() {
+	if (player.health <= 0 || boss.health <= 0) {
+		quit = 2;
+	}
+}
+
+void Game::pickLevel() {
+	displayMenu();
+	if (actualLevel == 0) {
+		bool closeWhile = false;
+		while (!closeWhile) {
+			while (SDL_WaitEvent(&event)) {
+				if (closeWhile) {
+					break;
+				}
+				if (event.type == SDL_KEYDOWN)
+				{
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_1:
+						actualLevel = 1;
+						closeWhile = true;
+						break;
+					case SDLK_2:
+						actualLevel = 2;
+						closeWhile = true;
+						break;
+					case SDLK_3:
+						actualLevel = 3;
+						closeWhile = true;
+						break;
+					case SDLK_ESCAPE:
+						QuitGame();
+						exit(0);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
 void Game::setLevel() {
-	boss.type = pickedLevel;
-	switch (pickedLevel)
+	boss.type = actualLevel;
+	switch (actualLevel)
 	{
 	case 1:
 		boss.bulletSpeed = 0.7;
@@ -351,6 +472,8 @@ void Game::setLevel() {
 		boss.sprite = LoadImage("./images/boss1.bmp");
 		boss.bWidth = 200;
 		boss.bHeight = 173;
+		boss.maxHealth = 20;
+		boss.health = boss.maxHealth;
 		background = LoadImage("./images/background.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 200;
 		player.positionY = LEVEL_HEIGHT / 2;
@@ -363,6 +486,8 @@ void Game::setLevel() {
 		boss.sprite = LoadImage("./images/boss2.bmp");
 		boss.bWidth = 112;
 		boss.bHeight = 152;
+		boss.maxHealth = 40;
+		boss.health = boss.maxHealth;
 		background = LoadImage("./images/background2.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 200;
 		player.positionY = LEVEL_HEIGHT / 2 + 150;
@@ -376,6 +501,8 @@ void Game::setLevel() {
 		boss.bWidth = 176;
 		boss.bHeight = 123;
 		boss.canMove = true;
+		boss.maxHealth = 60;
+		boss.health = boss.maxHealth;
 		background = LoadImage("./images/background3.bmp");
 		player.positionX = SCREEN_WIDTH / 2 - 100;
 		player.positionY = LEVEL_HEIGHT / 2 + 400;

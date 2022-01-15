@@ -11,15 +11,23 @@
 extern "C"
 #endif
 int main(int argc, char **argv) {
-
+	int actualLevelMain = 0;
 
 	while (1) {
 		Game MainGame;
+		MainGame.actualLevel = actualLevelMain;
 		MainGame.pickLevel();
 		MainGame.setLevel();
 		if (MainGame.UpdateTime()) {
 			break;
 		}
+
+		//if (MainGame.actualLevel == 1) {
+		//	actualLevelMain = 1;
+		//}
+		//else {
+			actualLevelMain = MainGame.actualLevel;
+		//}
 	}
 	// okno konsoli nie jest widoczne, je¿eli chcemy zobaczyæ
 	// komunikaty wypisywane printf-em trzeba w opcjach:
