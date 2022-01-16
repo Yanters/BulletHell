@@ -13,19 +13,25 @@ extern "C" {
 }
 
 void DrawPixel(SDL_Surface* surface, int x, int y, Uint32 color);
-
+class Healing {
+public:
+	Healing();
+	double positionX, positionY;
+	bool active = false;
+	bool checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight);
+};
 
 class Game {
 public:
 	int t1, t2, quit, frames, rc;
 	double delta, worldTime, fpsTimer, fps, distance, etiSpeed;
 	SDL_Event event;
-	SDL_Surface* screen, * charset, * background ,* menu, * victory, * defeat;
+	SDL_Surface* screen, * charset, * background, * menu, * victory, * defeat, * healing, * markA, * markB, * markC;
 	SDL_Texture* scrtex;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 
-	player player;
+	Player player;
 	Boss boss;
 
 	char text[128];
@@ -33,7 +39,8 @@ public:
 	int zielony;
 	int czerwony;
 	int niebieski;
-	//functions
+	int score = 0;
+
 	Game();
 	void pickLevel();
 	void setLevel();
@@ -48,6 +55,12 @@ public:
 	void CheckInput();
 	void displayInterface();
 	void displayHP(double pX, double pY, int pHealth, int pMaxHealth, double bX, double bY, int bHealth, int bMaxHealth, int bWidth, int bHeight, double offsetX, double offsetY);
+	void spawnAndAddHP(double deltaTime);
+	double spawnHpCooldown = 5.0;
+	double lastSpawnHpTime = 0;
+	int maxSpawnHp = 5;
+	int spawnedHpCount = 0;
+	Healing healingBox[5];
 
 	int actualLevel = 1;
 	void displayDefeat();

@@ -11,7 +11,7 @@ Boss::Boss(char name[], double setPositionX, double setPositionY) {
 void Boss::startAttack(double timeDiff) {
 	srand(time(NULL));
 	int randomNumber = rand() % 2 + 1;
-	 
+
 	if (lastShoot >= shootCooldown) {
 		lastShoot = 0;
 		switch (type)
@@ -35,7 +35,7 @@ void Boss::startAttack(double timeDiff) {
 			}
 			break;
 		case 3:
-			if (int(timeDiff)%5==0 && randomNumber%2==0)
+			if (int(timeDiff) % 5 == 0 && randomNumber % 2 == 0)
 			{
 				multipleSpiralPattern(-timeDiff);
 
@@ -45,23 +45,19 @@ void Boss::startAttack(double timeDiff) {
 			}
 			break;
 		}
-		
 	}
-	
-	
-	
 }
 
 void Boss::shootBullet(double velX, double velY) {
-	
-		if (bulletsShoot == 100) bulletsShoot = 0;
-		bullets[bulletsShoot].alive = true;
-		bullets[bulletsShoot].positionX = positionX;
-		bullets[bulletsShoot].positionY = positionY;
-		bullets[bulletsShoot].velX = velX;
-		bullets[bulletsShoot].velY = velY;
-		bullets[bulletsShoot].speed = bulletSpeed;
-		bulletsShoot++;
+
+	if (bulletsShoot == 100) bulletsShoot = 0;
+	bullets[bulletsShoot].alive = true;
+	bullets[bulletsShoot].positionX = positionX;
+	bullets[bulletsShoot].positionY = positionY;
+	bullets[bulletsShoot].velX = velX;
+	bullets[bulletsShoot].velY = velY;
+	bullets[bulletsShoot].speed = bulletSpeed;
+	bulletsShoot++;
 
 }
 
@@ -111,14 +107,13 @@ void Boss::spiralPattern(double timeDiff) {
 
 void Boss::multipleSpiralPattern(double timeDiff) {
 
-		shootBullet(sin(M_PI * timeDiff), cos(M_PI * timeDiff));
-		shootBullet(sin(M_PI * timeDiff +M_PI), cos(M_PI * timeDiff + M_PI));
-
+	shootBullet(sin(M_PI * timeDiff), cos(M_PI * timeDiff));
+	shootBullet(sin(M_PI * timeDiff + M_PI), cos(M_PI * timeDiff + M_PI));
 }
 
 void Boss::moveBoss(double timeDelta, double distance) {
 	if (canMove) {
-		positionX += double((sin(distance) * bossSpeed) * timeDelta)*100;
-		positionY += double((cos(distance) * bossSpeed) * timeDelta)*100;
+		positionX += double((sin(distance) * bossSpeed) * timeDelta) * 100;
+		positionY += double((cos(distance) * bossSpeed) * timeDelta) * 100;
 	}
 }

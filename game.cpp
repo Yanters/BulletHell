@@ -1,13 +1,24 @@
 #include "game.h"
+Healing::Healing() {
+	active = false;
+	positionX = 0;
+	positionY = 0;
+}
+
+bool Healing::checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight) {
+	if (positionX >= ObjectPositionX - (ObjectWidth / 2) && positionX <= ObjectPositionX + (ObjectWidth / 2) && positionY >= ObjectPositionY - (ObjectHeight / 2) && positionY <= ObjectPositionY + (ObjectHeight / 2)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
 Game::Game() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		printf("SDL_Init error: %s\n", SDL_GetError());
 	}
 
-	// tryb pe³noekranowy / fullscreen mode
-//	rc = SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP,
-//	                                 &window, &renderer);
 	rc = SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0,
 		&window, &renderer);
 	if (rc != 0) {
@@ -18,17 +29,13 @@ Game::Game() {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 	SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-
 	SDL_SetWindowTitle(window, "Bullet Hell");
-
 
 	screen = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32,
 		0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-
 	scrtex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
 		SDL_TEXTUREACCESS_STREAMING,
 		SCREEN_WIDTH, SCREEN_HEIGHT);
-
 
 	// wy³¹czenie widocznoœci kursora myszy
 	SDL_ShowCursor(SDL_DISABLE);
@@ -43,26 +50,20 @@ Game::Game() {
 	victory = LoadImage("./images/victory.bmp");
 	defeat = LoadImage("./images/defeat.bmp");
 	charset = LoadImage("./cs8x8.bmp");
+	healing = LoadImage("./images/healing.bmp");
+	markA = LoadImage("./images/markA.bmp");
+	markB = LoadImage("./images/markB.bmp");
+	markC = LoadImage("./images/markC.bmp");
 	SDL_SetColorKey(charset, true, 0x000000);
 
-
-
-
 	t1 = SDL_GetTicks();
-
-
-
 }
-
-
-
 
 // narysowanie napisu txt na powierzchni screen, zaczynaj¹c od punktu (x, y)
 // charset to bitmapa 128x128 zawieraj¹ca znaki
 // draw a text txt on surface screen, starting from the point (x, y)
 // charset is a 128x128 bitmap containing character images
-
-void Game::DrawString( int x, int y, const char* text) {
+void Game::DrawString(int x, int y, const char* text) {
 	int px, py, c;
 	SDL_Rect s, d;
 	s.w = 8;
@@ -96,8 +97,6 @@ void Game::DrawSurface(SDL_Surface* sprite, int x, int y) {
 	SDL_BlitSurface(sprite, NULL, screen, &dest);
 };
 
-
-
 // rysowanie pojedynczego pixela
 // draw a single pixel
 void DrawPixel(SDL_Surface* surface, int x, int y, Uint32 color) {
@@ -105,7 +104,6 @@ void DrawPixel(SDL_Surface* surface, int x, int y, Uint32 color) {
 	Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
 	*(Uint32*)p = color;
 };
-
 
 // rysowanie linii o d³ugoœci l w pionie (gdy dx = 0, dy = 1) 
 // b¹dŸ poziomie (gdy dx = 1, dy = 0)
@@ -118,21 +116,17 @@ void Game::DrawLine(int x, int y, int l, int dx, int dy, Uint32 color) {
 	};
 };
 
-
-
 // rysowanie prostok¹ta o d³ugoœci boków l i k
 // draw a rectangle of size l by k
-void Game::DrawRectangle( int x, int y, int l, int k, Uint32 outlineColor, Uint32 fillColor) {
+void Game::DrawRectangle(int x, int y, int l, int k, Uint32 outlineColor, Uint32 fillColor) {
 	int i;
-	DrawLine( x, y, k, 0, 1, outlineColor);
-	DrawLine( x + l - 1, y, k, 0, 1, outlineColor);
-	DrawLine( x, y, l, 1, 0, outlineColor);
-	DrawLine( x, y + k - 1, l, 1, 0, outlineColor);
+	DrawLine(x, y, k, 0, 1, outlineColor);
+	DrawLine(x + l - 1, y, k, 0, 1, outlineColor);
+	DrawLine(x, y, l, 1, 0, outlineColor);
+	DrawLine(x, y + k - 1, l, 1, 0, outlineColor);
 	for (i = y + 1; i < y + k - 1; i++)
-		DrawLine( x + 1, i, l - 2, 1, 0, fillColor);
+		DrawLine(x + 1, i, l - 2, 1, 0, fillColor);
 };
-
-
 
 void Game::CheckInput() {
 	while (SDL_PollEvent(&event)) {
@@ -145,12 +139,12 @@ void Game::CheckInput() {
 			if (event.key.keysym.sym == SDLK_LEFT) {
 				player.VelX = -1;
 				player.direction = 1;
-			} 
+			}
 			if (event.key.keysym.sym == SDLK_RIGHT) {
 				player.VelX = 1;
 				player.direction = 0;
 			}
-			if (event.key.keysym.sym == SDLK_w) player.shootBullet(0,-1);
+			if (event.key.keysym.sym == SDLK_w) player.shootBullet(0, -1);
 			if (event.key.keysym.sym == SDLK_s) player.shootBullet(0, 1);
 			if (event.key.keysym.sym == SDLK_a) player.shootBullet(-1, 0);
 			if (event.key.keysym.sym == SDLK_d) player.shootBullet(1, 0);
@@ -170,28 +164,23 @@ void Game::CheckInput() {
 }
 
 void Game::displayInterface() {
-	// tekst informacyjny / info text
-	DrawRectangle(SCREEN_WIDTH - 120 , 0, 120, 35, czerwony, czarny);
-	//            "template for the second project, elapsed time = %.1lf s  %.0lf frames / s"
+	DrawRectangle(SCREEN_WIDTH - 120, 0, 120, 35, czerwony, czarny);
 	sprintf(text, "Time: %.1lfs", worldTime);
-	DrawString(SCREEN_WIDTH-10 -2* strlen(text) * 8 / 2, 5, text);
+	DrawString(SCREEN_WIDTH - 10 - 2 * strlen(text) * 8 / 2, 5, text);
 
-	//When player can Shoot TETETE
-	DrawRectangle(0, 0, 120, 35, czerwony, czarny);
+	DrawRectangle(0, 0, 120, 40, czerwony, czarny);
 	sprintf(text, "Boss HP: %d", boss.health);
 	DrawString(5, 5, text);
 	sprintf(text, "Player HP: %d", player.health);
 	DrawString(5, 15, text);
-
+	sprintf(text, "Score: %d", score);
+	DrawString(5, 25, text);
 
 	sprintf(text, "  %.0lf FPS", fps);
-	DrawString(SCREEN_WIDTH-10 - 2 * strlen(text) * 8 / 2, 20, text);
-	//	      "Esc - exit, \030 - faster, \031 - slower"
-
+	DrawString(SCREEN_WIDTH - 10 - 2 * strlen(text) * 8 / 2, 20, text);
 	DrawRectangle(5, SCREEN_HEIGHT - 25, 250, 20, czerwony, czarny);
-
 	sprintf(text, "Esc - quit, \030 \031 \032 \033 - movement");
-	DrawString(10, SCREEN_HEIGHT-20, text);
+	DrawString(10, SCREEN_HEIGHT - 20, text);
 }
 
 bool Game::UpdateTime() {
@@ -203,19 +192,11 @@ bool Game::UpdateTime() {
 	worldTime = 0;
 	distance = 0;
 	etiSpeed = 1;
-	
+
 
 	//SDL_Surface* background = SDL_LoadBMP("./background.bmp");
 	while (!quit) {
 		t2 = SDL_GetTicks();
-		
-
-		// w tym momencie t2-t1 to czas w milisekundach,
-		// jaki uplyna³ od ostatniego narysowania ekranu
-		// delta to ten sam czas w sekundach
-		// here t2-t1 is the time in milliseconds since
-		// the last screen was drawn
-		// delta is the same time in seconds
 		delta = (t2 - t1) * 0.001;
 		t1 = t2;
 		player.lastShoot += delta;
@@ -228,41 +209,54 @@ bool Game::UpdateTime() {
 		DrawSurface(background, LEVEL_WIDTH / 2 + player.offsetX, LEVEL_HEIGHT / 2 + player.offsetY);
 		//DrawSurface(background, SCREEN_WIDTH / 2 , SCREEN_HEIGHT / 2 );
 
-		player.movePlayer(delta);
-		displayHP(player.positionX, player.positionY, player.health,player.maxHelath, boss.positionX, boss.positionY, boss.health,boss.maxHealth,boss.BOSS_WIDTH,boss.BOSS_HEIGHT, player.offsetX, player.offsetY);
-		for (int o = 0; o < 100; o++) {
-			player.bullets[o].calcBullet();
-			if (player.bullets[o].alive) {
-				DrawSurface(player.bulletSprite, player.bullets[o].positionX + player.offsetX, player.bullets[o].positionY + player.offsetY);
-				if (player.bullets[o].checkCollision(boss.positionX, boss.positionY, boss.bWidth, boss.bHeight))
-				{
-					boss.health--;
-					player.bullets[o].alive = false;
-				}
+		spawnAndAddHP(delta);
+		for (int o = 0; o < maxSpawnHp; o++) {
+			if (healingBox[o].active) {
+				DrawSurface(healing, healingBox[o].positionX + player.offsetX, healingBox[o].positionY + player.offsetY);
 			}
 		}
 
-		for (int o = 0; o <200; o++) {
-			boss.bullets[o].calcBullet();
-			if (boss.bullets[o].alive) {
-				DrawSurface(boss.bulletSprite, boss.bullets[o].positionX + player.offsetX, boss.bullets[o].positionY + player.offsetY);
-				if (boss.bullets[o].checkCollision(player.positionX, player.positionY, player.pWidth, player.pHeight))
+		player.movePlayer(delta);
+		for (int o = 0; o < 100; o++) {
+			player.bullets[o].calcBullet(delta);
+			if (player.bullets[o].alive) {
+				if (player.bullets[o].checkCollision(boss.positionX, boss.positionY, boss.bWidth, boss.bHeight))
 				{
-					player.hitPlayer();
-					
-					boss.bullets[o].alive = false;
+					score += player.playerMultiplayer * 10;
+					player.playerMultiplayer += 0.5;
+					boss.bossMultiplayer = 1.0;
+					boss.health--;
+					player.bullets[o].alive = false;
 				}
+				if (player.bullets[o].alive) DrawSurface(player.bulletSprite, player.bullets[o].positionX + player.offsetX, player.bullets[o].positionY + player.offsetY);
 			}
 		}
+
+		for (int o = 0; o < 200; o++) {
+			boss.bullets[o].calcBullet(delta);
+			if (boss.bullets[o].alive) {
+				if (boss.bullets[o].checkCollision(player.positionX, player.positionY, player.pWidth, player.pHeight))
+				{
+					score -= boss.bossMultiplayer * 10;
+					boss.bossMultiplayer += 0.5;
+					player.playerMultiplayer = 1.0;
+					player.hitPlayer();
+					boss.bullets[o].alive = false;
+				}
+				if (boss.bullets[o].alive) DrawSurface(boss.bulletSprite, boss.bullets[o].positionX + player.offsetX, boss.bullets[o].positionY + player.offsetY);
+			}
+		}
+
+		displayHP(player.positionX, player.positionY, player.health, player.maxHelath, boss.positionX, boss.positionY, boss.health, boss.maxHealth, boss.bWidth, boss.bHeight, player.offsetX, player.offsetY);
 		player.keepSafe(delta);
 
 		DrawSurface(player.sprite, player.positionX + player.offsetX, player.positionY + player.offsetY);
 		if (boss.canMove) {
 			boss.moveBoss(delta, distance);
 		}
-		
-			DrawSurface(boss.sprite, boss.positionX + player.offsetX, boss.positionY + player.offsetY);
-		
+
+		DrawSurface(boss.sprite, boss.positionX + player.offsetX, boss.positionY + player.offsetY);
+
 		boss.startAttack(worldTime);
 		//DrawSurface(eti, player.positionX, player.positionY);
 		//DrawSurface(eti,player.positionX, player.positionY);
@@ -305,7 +299,7 @@ bool Game::UpdateTime() {
 		actualLevel = 0;
 		return false;
 	}
-	else if(quit==2) {
+	else if (quit == 2) {
 		return false;
 	}
 }
@@ -319,11 +313,11 @@ void Game::displayMenu() {
 	SDL_RenderPresent(renderer);
 }
 
-void Game::displayHP(double pX, double pY, int pHealth,int pMaxHealth, double bX, double bY, int bHealth, int bMaxHealth,int bWidth,int bHeight,double offsetX, double offsetY) {
+void Game::displayHP(double pX, double pY, int pHealth, int pMaxHealth, double bX, double bY, int bHealth, int bMaxHealth, int bWidth, int bHeight, double offsetX, double offsetY) {
 	double pMinus = 0, bMinus = 0;
 	if (pHealth == pMaxHealth) { pMinus = 1; }
 	else {
-		pMinus = double(double( pHealth)/ double( pMaxHealth) );
+		pMinus = double(double(pHealth) / double(pMaxHealth));
 	}
 	if (bHealth == bMaxHealth) { bMinus = 1; }
 	else {
@@ -337,24 +331,63 @@ void Game::displayHP(double pX, double pY, int pHealth,int pMaxHealth, double bX
 		bMinus = 0;
 	}
 
-	if (!(pX - (PLAYER_WIDTH)+offsetX<0 || pX - (PLAYER_WIDTH)+offsetX + 1 > SCREEN_WIDTH || pY - PLAYER_WIDTH + offsetY < 0)) {
-		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX, pY - PLAYER_WIDTH + offsetY, 2 * PLAYER_WIDTH, 15, czarny, czarny);
-		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX + 1, pY - PLAYER_WIDTH + offsetY + 1, (2 * PLAYER_WIDTH - 2) * pMinus, 13, czarny, czerwony);
+	if (!(pX - (PLAYER_WIDTH)+offsetX<0 || pX - (PLAYER_WIDTH)+offsetX + 1 > SCREEN_WIDTH || pX + (PLAYER_WIDTH)+offsetX > SCREEN_WIDTH || pY - PLAYER_WIDTH + offsetY < 0)) {
+		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX, pY - PLAYER_HEIGHT * 3 / 4 + offsetY, 2 * PLAYER_WIDTH, 15, czarny, czarny);
+		DrawRectangle(pX - (PLAYER_WIDTH)+offsetX + 1, pY - PLAYER_HEIGHT * 3 / 4 + offsetY + 1, (2 * PLAYER_WIDTH - 2) * pMinus, 13, czarny, czerwony);
 	}
-	
+
 	double shorterConditionX = bX - (bWidth / 2) + offsetX + 1 + bWidth;
-	double shorterConditionY = bY - bWidth / 2 + offsetY+15;
-	if(!((bX - (bWidth / 2) + offsetX) < 0 || (bX - (bWidth / 2) + offsetX) > SCREEN_WIDTH || shorterConditionX <0 || shorterConditionX > SCREEN_WIDTH ||shorterConditionY<0|| shorterConditionY>SCREEN_HEIGHT)) {
-		DrawRectangle(bX - (bWidth/2)+offsetX, bY - bWidth/2 + offsetY,  bWidth, 15, czarny, czarny);
-		DrawRectangle(bX - (bWidth/2)+offsetX + 1, bY - bWidth/2 + offsetY + 1, ( bWidth - 2) * bMinus, 13, czarny, czerwony);
+	double shorterConditionY = bY - bWidth / 2 + offsetY + 15;
+	if (!((bX - (bWidth / 2) + offsetX) < 0 || (bX - (bWidth / 2) + offsetX) > SCREEN_WIDTH || shorterConditionX <0 || shorterConditionX > SCREEN_WIDTH || shorterConditionY<0 || shorterConditionY>SCREEN_HEIGHT)) {
+		DrawRectangle(bX - (bWidth / 2) + offsetX, bY - bHeight * 2 / 3 + offsetY, bWidth, 15, czarny, czarny);
+		DrawRectangle(bX - (bWidth / 2) + offsetX + 1, bY - bHeight * 2 / 3 + offsetY + 1, (bWidth - 2) * bMinus, 13, czarny, czerwony);
 	}
-	
+}
+
+void Game::spawnAndAddHP(double deltaTime) {
+	lastSpawnHpTime += delta;
+	if (lastSpawnHpTime >= spawnHpCooldown && spawnedHpCount < maxSpawnHp) {
+		lastSpawnHpTime = 0;
+		//int randomWidth = rand() % ((LEVEL_WIDTH - 50) - 50) + 50;
+		int randomWidth = rand() % LEVEL_WIDTH;
+		//int randomHeight = rand() % ((LEVEL_HEIGHT - 50) - 50) + 50;
+		int randomHeight = rand() % LEVEL_HEIGHT;
+
+		int freeHealingSpace = -1;
+		for (int i = 0; i < maxSpawnHp; i++) {
+			if (healingBox[i].active == false) {
+				freeHealingSpace = i;
+			}
+		}
+		if (freeHealingSpace != -1)
+		{
+			healingBox[freeHealingSpace].active = true;
+			healingBox[freeHealingSpace].positionX = randomWidth;
+			healingBox[freeHealingSpace].positionY = randomHeight;
+			spawnedHpCount++;
+		}
+	}
+
+	for (int i = 0; i < 10; i++) {
+		if (healingBox[i].active && healingBox[i].checkCollision(player.positionX, player.positionY, player.pWidth, player.pHeight) && player.health < player.maxHelath) {
+			healingBox[i].active = false;
+			player.health++;
+			spawnedHpCount--;
+		}
+	}
 }
 
 void Game::displayVictory() {
-	DrawSurface(victory, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 );
-
-
+	DrawSurface(victory, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	if (score > 1100) {
+		DrawSurface(markA, SCREEN_WIDTH / 2, 70);
+	}
+	else if (score > 500) {
+		DrawSurface(markB, SCREEN_WIDTH / 2, 70);
+	}
+	else {
+		DrawSurface(markC, SCREEN_WIDTH / 2, 70);
+	}
 
 	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
 	//		SDL_RenderClear(renderer);
@@ -372,7 +405,7 @@ void Game::displayVictory() {
 				switch (event.key.keysym.sym)
 				{
 				case SDLK_RETURN:
-					actualLevel = (actualLevel+1)%4;
+					actualLevel = (actualLevel + 1) % 4;
 					closeWhile = true;
 					break;
 				case SDLK_ESCAPE:
@@ -388,11 +421,7 @@ void Game::displayVictory() {
 
 void Game::displayDefeat() {
 	DrawSurface(defeat, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-
-
-
 	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
-	//		SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, scrtex, NULL, NULL);
 	SDL_RenderPresent(renderer);
 
@@ -466,7 +495,7 @@ void Game::setLevel() {
 	switch (actualLevel)
 	{
 	case 1:
-		boss.bulletSpeed = 0.7;
+		boss.bulletSpeed = 400;
 		boss.positionX = LEVEL_WIDTH / 2 + 150;
 		boss.positionY = LEVEL_HEIGHT / 2;
 		boss.sprite = LoadImage("./images/boss1.bmp");
@@ -479,7 +508,7 @@ void Game::setLevel() {
 		player.positionY = LEVEL_HEIGHT / 2;
 		break;
 	case 2:
-		boss.bulletSpeed = 0.8;
+		boss.bulletSpeed = 500;
 		boss.shootCooldown = 0.2;
 		boss.positionX = LEVEL_WIDTH / 2 + 20;
 		boss.positionY = LEVEL_HEIGHT / 2 + 150;
@@ -493,10 +522,10 @@ void Game::setLevel() {
 		player.positionY = LEVEL_HEIGHT / 2 + 150;
 		break;
 	case 3:
-		boss.bulletSpeed = 0.6;
+		boss.bulletSpeed = 600;
 		boss.shootCooldown = 0.1;
 		boss.positionX = LEVEL_WIDTH / 2 + 20;
-		boss.positionY = LEVEL_HEIGHT / 2 ;
+		boss.positionY = LEVEL_HEIGHT / 2;
 		boss.sprite = LoadImage("./images/boss3.bmp");
 		boss.bWidth = 176;
 		boss.bHeight = 123;
@@ -513,24 +542,29 @@ void Game::setLevel() {
 void Game::QuitGame() {
 
 	// zwolnienie powierzchni / freeing all surfaces
-	SDL_FreeSurface(charset);
-	SDL_FreeSurface(screen);
-	SDL_FreeSurface(background);
-	SDL_FreeSurface(menu);
+	if (charset != NULL) SDL_FreeSurface(charset);
+	if (screen != NULL) SDL_FreeSurface(screen);
+	if (scrtex != NULL) SDL_DestroyTexture(scrtex);
+	if (renderer != NULL) SDL_DestroyRenderer(renderer);
+	if (window != NULL) SDL_DestroyWindow(window);
 	//player
-	SDL_FreeSurface(player.heroL);
-	SDL_FreeSurface(player.heroR);
-	SDL_FreeSurface(player.heroLS);
-	SDL_FreeSurface(player.heroRS);
-	SDL_FreeSurface(player.bulletSprite);
+	if (player.heroL != NULL) SDL_FreeSurface(player.heroL);
+	if (player.heroR != NULL) SDL_FreeSurface(player.heroR);
+	if (player.heroLS != NULL) SDL_FreeSurface(player.heroLS);
+	if (player.heroRS != NULL) SDL_FreeSurface(player.heroRS);
+	if (player.bulletSprite != NULL) SDL_FreeSurface(player.bulletSprite);
 	//boss
-	SDL_FreeSurface(boss.sprite);
-	SDL_FreeSurface(boss.bulletSprite);
-
-
-	SDL_DestroyTexture(scrtex);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+	if (boss.sprite != NULL) SDL_FreeSurface(boss.sprite);
+	if (boss.bulletSprite != NULL) SDL_FreeSurface(boss.bulletSprite);
+	//game
+	if (healing != NULL) SDL_FreeSurface(healing);
+	if (markA != NULL) SDL_FreeSurface(markA);
+	if (markB != NULL) SDL_FreeSurface(markB);
+	if (markC != NULL) SDL_FreeSurface(markC);
+	if (background != NULL) SDL_FreeSurface(background);
+	if (menu != NULL) SDL_FreeSurface(menu);
+	if (victory != NULL) SDL_FreeSurface(victory);
+	if (defeat != NULL) SDL_FreeSurface(defeat);
 
 	SDL_Quit();
 }

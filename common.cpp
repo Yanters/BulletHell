@@ -15,10 +15,10 @@ SDL_Surface* LoadImage(char imageName[]) {
 	return image;
 }
 
-void Bullet::calcBullet() {
+void Bullet::calcBullet(double deltaTime) {
 	if (alive) {
-		positionX += velX * speed;
-		positionY += velY * speed;
+		positionX += velX * speed * deltaTime;
+		positionY += velY * speed * deltaTime;
 	}
 
 	if (positionX < 0 || positionX > LEVEL_WIDTH || positionY < 0 || positionY > LEVEL_HEIGHT) {
@@ -28,7 +28,7 @@ void Bullet::calcBullet() {
 
 
 bool Bullet::checkCollision(double ObjectPositionX, double ObjectPositionY, int ObjectWidth, int ObjectHeight) {
-	if (positionX >= ObjectPositionX - (ObjectWidth / 2) && positionX <= ObjectPositionX + (ObjectWidth / 2) && positionY>= ObjectPositionY - (ObjectHeight/2) && positionY <= ObjectPositionY + (ObjectHeight / 2)) {
+	if (positionX >= ObjectPositionX - (ObjectWidth / 2) && positionX <= ObjectPositionX + (ObjectWidth / 2) && positionY >= ObjectPositionY - (ObjectHeight / 2) && positionY <= ObjectPositionY + (ObjectHeight / 2)) {
 		return true;
 	}
 	else {

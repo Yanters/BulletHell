@@ -11,9 +11,9 @@ extern "C" {
 }
 
 
-class player {
+class Player {
 public:
-	player();
+	Player();
 
 	SDL_Surface* sprite;
 	SDL_Surface* heroR, * heroRS;
@@ -24,22 +24,23 @@ public:
 
 	int speed, VelX, VelY;
 	double  positionX, positionY;
-	double offsetX=0, offsetY=0;
+	double offsetX = 0, offsetY = 0;
 	void movePlayer(double delta);
 	int direction = 0;
 	void switchPlayer();
 	int maxHelath = 10;
 	int health = maxHelath;
+	double playerMultiplayer = 1.0;
 
 	int pWidth = PLAYER_WIDTH;
 	int pHeight = PLAYER_HEIGHT;
 	Bullet bullets[100];
 	int bulletsShoot = 0;
 
-	double bulletSpeed = 0.7;
-	
+	double bulletSpeed = 500;
+
 	double shootCooldown = 0.5;
-	double lastShoot= shootCooldown;
+	double lastShoot = shootCooldown;
 
 	double barrierCooldown = 3;
 	double lastBarrier = barrierCooldown;

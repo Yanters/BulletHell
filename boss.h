@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "common.h"
 
 extern "C" {
@@ -8,20 +7,20 @@ extern "C" {
 #include"./SDL2-2.0.10/include/SDL_main.h"
 }
 
-
 class Boss {
 public:
 	Boss(char name[] = "./images/boss1.bmp", double setPositionX = LEVEL_WIDTH / 2 + 100, double setPositionY = LEVEL_HEIGHT / 2);
-	SDL_Surface* sprite = LoadImage("./images/boss1.bmp");
-	int BOSS_WIDTH = 200, BOSS_HEIGHT=173;
+	SDL_Surface* sprite;
 	SDL_Surface* bulletSprite;
 
-	double positionX = LEVEL_WIDTH/2, positionY= LEVEL_HEIGHT / 2;
+	double positionX = LEVEL_WIDTH / 2, positionY = LEVEL_HEIGHT / 2;
 	int type = 1;
 	int bWidth;
 	int bHeight;
 	int maxHealth = 50;
 	int health = maxHealth;
+	double bossMultiplayer = 1.0;
+
 
 	Bullet bullets[200];
 	int bulletsShoot = 0;

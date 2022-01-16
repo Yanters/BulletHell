@@ -1,6 +1,6 @@
 #include "player.h"
 
-player::player() {
+Player::Player() {
 	speed = 300;
 	VelX = 0, VelY = 0;
 	positionX = SCREEN_WIDTH / 2 - 275;
@@ -14,7 +14,7 @@ player::player() {
 	bulletSprite = LoadImage("./images/bullet2.bmp");
 }
 
-void player::switchPlayer() {
+void Player::switchPlayer() {
 	if (direction == 0) {
 		if (isSafe) {
 			sprite = heroRS;
@@ -34,7 +34,7 @@ void player::switchPlayer() {
 }
 
 
-void player::movePlayer(double delta) {
+void Player::movePlayer(double delta) {
 	switchPlayer();
 	positionX += double((VelX * speed) * delta);
 	positionY += double((VelY * speed) * delta);
@@ -60,7 +60,7 @@ void player::movePlayer(double delta) {
 
 
 
-void player::calculateOffset() {
+void Player::calculateOffset() {
 	if (positionX > SCREEN_WIDTH / 2 && positionX < LEVEL_WIDTH - (SCREEN_WIDTH / 2)) {
 		offsetX = SCREEN_WIDTH / 2 - positionX;
 	}
@@ -82,7 +82,7 @@ void player::calculateOffset() {
 	}
 }
 
-void player::shootBullet(double velX, double velY) {
+void Player::shootBullet(double velX, double velY) {
 	if (lastShoot >= shootCooldown) {
 		lastShoot = 0;
 		if (bulletsShoot == 100) bulletsShoot = 0;
@@ -96,7 +96,7 @@ void player::shootBullet(double velX, double velY) {
 	}
 
 }
-void player::hitPlayer() {
+void Player::hitPlayer() {
 	if (!isSafe) {
 		health--;
 		if (lastBarrier >= barrierCooldown) {
@@ -107,7 +107,7 @@ void player::hitPlayer() {
 }
 
 
-void player::keepSafe(double delta) {
+void Player::keepSafe(double delta) {
 	if (isSafe)
 	{
 		lastTimeSafe += delta;
