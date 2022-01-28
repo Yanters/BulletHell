@@ -184,38 +184,28 @@ void Game::displayInterface() {
 }
 
 bool Game::UpdateTime() {
-
 	frames = 0;
 	fpsTimer = 0;
 	fps = 0;
 	quit = 0;
 	worldTime = 0;
 	distance = 0;
-	etiSpeed = 1;
-
-
-	//SDL_Surface* background = SDL_LoadBMP("./background.bmp");
 	while (!quit) {
 		t2 = SDL_GetTicks();
 		delta = (t2 - t1) * 0.001;
 		t1 = t2;
+		worldTime += delta;
 		player.lastShoot += delta;
 		boss.lastShoot += delta;
-		worldTime += delta;
-
 		distance += boss.bossSpeed * delta;
-
 		SDL_FillRect(screen, NULL, czarny);
 		DrawSurface(background, LEVEL_WIDTH / 2 + player.offsetX, LEVEL_HEIGHT / 2 + player.offsetY);
-		//DrawSurface(background, SCREEN_WIDTH / 2 , SCREEN_HEIGHT / 2 );
-
 		spawnAndAddHP(delta);
 		for (int o = 0; o < maxSpawnHp; o++) {
 			if (healingBox[o].active) {
 				DrawSurface(healing, healingBox[o].positionX + player.offsetX, healingBox[o].positionY + player.offsetY);
 			}
 		}
-
 		player.movePlayer(delta);
 		for (int o = 0; o < 100; o++) {
 			player.bullets[o].calcBullet(delta);
@@ -231,7 +221,6 @@ bool Game::UpdateTime() {
 				if (player.bullets[o].alive) DrawSurface(player.bulletSprite, player.bullets[o].positionX + player.offsetX, player.bullets[o].positionY + player.offsetY);
 			}
 		}
-
 		for (int o = 0; o < 200; o++) {
 			boss.bullets[o].calcBullet(delta);
 			if (boss.bullets[o].alive) {
@@ -246,43 +235,28 @@ bool Game::UpdateTime() {
 				if (boss.bullets[o].alive) DrawSurface(boss.bulletSprite, boss.bullets[o].positionX + player.offsetX, boss.bullets[o].positionY + player.offsetY);
 			}
 		}
-
 		displayHP(player.positionX, player.positionY, player.health, player.maxHelath, boss.positionX, boss.positionY, boss.health, boss.maxHealth, boss.bWidth, boss.bHeight, player.offsetX, player.offsetY);
 		player.keepSafe(delta);
-
 		DrawSurface(player.sprite, player.positionX + player.offsetX, player.positionY + player.offsetY);
 		if (boss.canMove) {
 			boss.moveBoss(delta, distance);
 		}
-
 		DrawSurface(boss.sprite, boss.positionX + player.offsetX, boss.positionY + player.offsetY);
-
 		boss.startAttack(worldTime);
-		//DrawSurface(eti, player.positionX, player.positionY);
-		//DrawSurface(eti,player.positionX, player.positionY);
-
 		fpsTimer += delta;
 		if (fpsTimer > 0.5) {
 			fps = frames * 2;
 			frames = 0;
 			fpsTimer -= 0.5;
 		};
-
 		displayInterface();
-
 		SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
-		//		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, scrtex, NULL, NULL);
 		SDL_RenderPresent(renderer);
-
-
-		// obs³uga zdarzeñ (o ile jakieœ zasz³y) / handling of events (if there were any)
 		checkGameStatus();
 		CheckInput();
 		frames++;
 	};
-	//esc - 1
-	// n - 2
 	if (player.health <= 0) {
 		displayDefeat();
 		QuitGame();
@@ -293,7 +267,6 @@ bool Game::UpdateTime() {
 		QuitGame();
 		return false;
 	}
-
 	QuitGame();
 	if (quit == 1) {
 		actualLevel = 0;
@@ -348,10 +321,8 @@ void Game::spawnAndAddHP(double deltaTime) {
 	lastSpawnHpTime += delta;
 	if (lastSpawnHpTime >= spawnHpCooldown && spawnedHpCount < maxSpawnHp) {
 		lastSpawnHpTime = 0;
-		//int randomWidth = rand() % ((LEVEL_WIDTH - 50) - 50) + 50;
-		int randomWidth = rand() % LEVEL_WIDTH;
-		//int randomHeight = rand() % ((LEVEL_HEIGHT - 50) - 50) + 50;
-		int randomHeight = rand() % LEVEL_HEIGHT;
+		int randomWidth = rand() % ((LEVEL_WIDTH - 50) - 50) + 50;
+		int randomHeight = rand() % ((LEVEL_HEIGHT - 50) - 50) + 50;
 
 		int freeHealingSpace = -1;
 		for (int i = 0; i < maxSpawnHp; i++) {
@@ -390,7 +361,6 @@ void Game::displayVictory() {
 	}
 
 	SDL_UpdateTexture(scrtex, NULL, screen->pixels, screen->pitch);
-	//		SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, scrtex, NULL, NULL);
 	SDL_RenderPresent(renderer);
 

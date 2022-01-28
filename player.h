@@ -39,7 +39,7 @@ public:
 
 	double bulletSpeed = 500;
 
-	double shootCooldown = 0.5;
+	double shootCooldown = 0.2;
 	double lastShoot = shootCooldown;
 
 	double barrierCooldown = 3;
